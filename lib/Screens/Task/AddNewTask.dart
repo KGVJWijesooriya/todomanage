@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:popover/popover.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:dropdown_button2/dropdown_button2.dart';
@@ -36,7 +37,11 @@ class _addNewTaskState extends State<addNewTask> {
   late stt.SpeechToText _speech;
   bool _isListening = false;
   bool _speechAvailable = false;
-
+  String _selectedLanguage = "en-US";
+  final Map<String, String> _languageOptions = {
+    "English": "en-US",
+    "Sinhala": "si-LK",
+  };
   @override
   void initState() {
     super.initState();
@@ -83,15 +88,19 @@ class _addNewTaskState extends State<addNewTask> {
           }
         },
         onError: (error) {
-          print('Speech recognition error: $error');
+          print('Speech recognition error: ${error.errorMsg}');
           setState(() {
             _isListening = false;
           });
         },
       );
+
+      print('Speech-to-Text available: $available');
       setState(() {
         _speechAvailable = available;
       });
+    } else if (status.isPermanentlyDenied) {
+      openAppSettings(); // Open app settings for manual permission.
     } else {
       print('Microphone permission denied');
       setState(() {
@@ -102,22 +111,34 @@ class _addNewTaskState extends State<addNewTask> {
 
   void _startListening(TextEditingController controller) async {
     if (_speechAvailable && !_isListening) {
-      setState(() {
-        _isListening = true;
-      });
-      _speech.listen(onResult: (val) {
+      try {
         setState(() {
-          controller.text = val.recognizedWords;
+          _isListening = true;
         });
-      });
+        await _speech.listen(
+          onResult: (val) {
+            setState(() {
+              controller.text += val.recognizedWords; // Appends text.
+            });
+          },
+          localeId: _selectedLanguage, // Specify locale if needed.
+        );
+      } catch (e) {
+        print('Error while starting listening: $e');
+        setState(() {
+          _isListening = false;
+        });
+      }
     }
   }
 
   void _stopListening() {
-    setState(() {
-      _isListening = false;
-    });
-    _speech.stop();
+    if (_isListening) {
+      setState(() {
+        _isListening = false;
+      });
+      _speech.stop();
+    }
   }
 
   void _onDateSelectionChanged(DateRangePickerSelectionChangedArgs args) {
@@ -135,7 +156,7 @@ class _addNewTaskState extends State<addNewTask> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          backgroundColor: Color(0xFF24263a),
+          backgroundColor: Theme.of(context).colorScheme.onSecondary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(3),
           ),
@@ -147,15 +168,19 @@ class _addNewTaskState extends State<addNewTask> {
               selectionMode: DateRangePickerSelectionMode.single,
               onSelectionChanged: _onDateSelectionChanged,
               initialSelectedDate: _selectedDate,
-              backgroundColor: Color(0xFF24263a),
-              selectionColor: Color(0xFF73FA92),
-              todayHighlightColor: Color(0xFF73FA92),
+              backgroundColor: Theme.of(context).colorScheme.onSecondary,
+              selectionColor: Theme.of(context).colorScheme.surface,
+              todayHighlightColor: Theme.of(context).colorScheme.surface,
               headerStyle: DateRangePickerHeaderStyle(
-                textStyle: TextStyle(color: Colors.white),
+                textStyle:
+                    TextStyle(color: Theme.of(context).colorScheme.secondary),
               ),
               monthCellStyle: DateRangePickerMonthCellStyle(
-                textStyle: TextStyle(color: Colors.white),
-                todayTextStyle: TextStyle(color: Color(0xFF73FA92)),
+                textStyle:
+                    TextStyle(color: Theme.of(context).colorScheme.secondary),
+                todayTextStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.surface,
+                    fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -168,61 +193,102 @@ class _addNewTaskState extends State<addNewTask> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
+        spacing: 10,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             "Task Title",
             style: TextStyle(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.secondary,
               fontSize: 16,
               fontWeight: FontWeight.w300,
             ),
           ),
           TextField(
             controller: titleController,
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: Theme.of(context).colorScheme.secondary),
             decoration: InputDecoration(
               hintText: 'Add Your Task Title Here',
               hintStyle: TextStyle(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.secondary,
                 fontWeight: FontWeight.w300,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
               ),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  _isListening ? Icons.mic_off : Icons.mic,
-                  color: Colors.white,
-                ),
-                onPressed: () {
+              suffixIcon: GestureDetector(
+                onTap: () {
+                  // Handle the mic tap action (start/stop listening)
                   if (_isListening) {
                     _stopListening();
                   } else {
                     _startListening(titleController);
                   }
                 },
+                onLongPress: () async {
+                  // Get the width of the screen to position the menu at the right corner
+                  final RenderBox renderBox =
+                      context.findRenderObject() as RenderBox;
+                  final position = renderBox.localToGlobal(Offset.zero);
+                  final screenWidth = MediaQuery.of(context).size.width;
+
+                  // Show the PopupMenuButton manually at the right corner
+                  await showMenu<String>(
+                    color: Theme.of(context).colorScheme.primary,
+                    context: context,
+                    position: RelativeRect.fromLTRB(
+                      screenWidth -
+                          50, // Right corner, adjust based on padding or size of the icon
+                      position.dy + 40, // Below the mic icon
+                      0,
+                      0,
+                    ),
+                    items: _languageOptions.entries.map((entry) {
+                      return PopupMenuItem<String>(
+                        value: entry.value,
+                        child: ListTile(
+                          title: Text(
+                            entry.key,
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.secondary),
+                          ),
+                          onTap: () {
+                            setState(() {
+                              _selectedLanguage = entry.value;
+                            });
+                            Navigator.pop(context); // Close the popover
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+                child: Icon(
+                  _isListening ? Icons.mic_off : Icons.mic,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
               ),
               filled: true,
-              fillColor: Color(0xFF24263a),
+              fillColor: Theme.of(context).colorScheme.primary,
               enabledBorder: OutlineInputBorder(
-                borderSide:
-                    BorderSide(color: const Color(0xFF73FA92), width: 0.5),
+                borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.surface, width: 0.5),
                 borderRadius: BorderRadius.circular(3),
               ),
               focusedBorder: OutlineInputBorder(
-                borderSide:
-                    BorderSide(color: const Color(0xFF73FA92), width: 1.0),
+                borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.surface, width: 1.0),
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
           ),
+
           SizedBox(height: 10),
           Text(
             "Task Description",
             style: TextStyle(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.secondary,
               fontSize: 16,
               fontWeight: FontWeight.w300,
             ),
@@ -231,13 +297,14 @@ class _addNewTaskState extends State<addNewTask> {
             children: [
               TextField(
                 controller: descriptionController,
-                style: TextStyle(color: Colors.white),
+                style:
+                    TextStyle(color: Theme.of(context).colorScheme.secondary),
                 minLines: 3,
                 maxLines: null,
                 decoration: InputDecoration(
                   hintText: 'Add Your Task Description here',
                   hintStyle: TextStyle(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.secondary,
                     fontWeight: FontWeight.w300,
                   ),
                   border: OutlineInputBorder(
@@ -245,106 +312,173 @@ class _addNewTaskState extends State<addNewTask> {
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
-                  fillColor: Color(0xFF24263a),
+                  fillColor: Theme.of(context).colorScheme.onSecondary,
                   enabledBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: const Color(0xFF73FA92), width: 0.5),
+                    borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.surface,
+                        width: 0.5),
                     borderRadius: BorderRadius.circular(3),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: const Color(0xFF73FA92), width: 1.0),
+                    borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.surface,
+                        width: 1.0),
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
               ),
               Positioned(
-                bottom: 0,
-                right: 0,
-                child: IconButton(
-                  icon: Icon(
-                    _isListening ? Icons.mic_off : Icons.mic,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {
+                bottom: 10,
+                right: 10,
+                child: GestureDetector(
+                  onTap: () {
+                    // Handle the mic tap action (start/stop listening)
                     if (_isListening) {
                       _stopListening();
                     } else {
                       _startListening(descriptionController);
                     }
                   },
+                  onLongPress: () async {
+                    // Get the width of the screen to position the menu at the right corner
+                    final RenderBox renderBox =
+                        context.findRenderObject() as RenderBox;
+                    final position = renderBox.localToGlobal(Offset.zero);
+                    final screenWidth = MediaQuery.of(context).size.width;
+
+                    // Show the PopupMenuButton manually at the right corner
+                    await showMenu<String>(
+                      color: Theme.of(context).colorScheme.primary,
+                      context: context,
+                      position: RelativeRect.fromLTRB(
+                        screenWidth -
+                            50, // Right corner, adjust based on padding or size of the icon
+                        position.dy + 40, // Below the mic icon
+                        0,
+                        0,
+                      ),
+                      items: _languageOptions.entries.map((entry) {
+                        return PopupMenuItem<String>(
+                          value: entry.value,
+                          child: ListTile(
+                            title: Text(
+                              entry.key,
+                              style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary),
+                            ),
+                            onTap: () {
+                              setState(() {
+                                _selectedLanguage = entry.value;
+                              });
+                              Navigator.pop(context); // Close the popover
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  },
+                  child: Icon(
+                    _isListening ? Icons.mic_off : Icons.mic,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
                 ),
+
+                // IconButton(
+                //   icon: Icon(
+                //     _isListening ? Icons.mic_off : Icons.mic,
+                //     color: Theme.of(context).colorScheme.secondary,
+                //   ),
+                //   onPressed: () {
+                //     if (_isListening) {
+                //       _stopListening();
+                //     } else {
+                //       _startListening(descriptionController);
+                //     }
+                //   },
+                // ),
               ),
             ],
           ),
           SizedBox(height: 10),
-          Text(
-            'Priority',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w300,
-            ),
-          ),
-          SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Column(
+            spacing: 10,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    priority = 0;
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: 500),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: priority == 0
-                        ? MediaQuery.of(context).size.width / 6
-                        : MediaQuery.of(context).size.width / 9,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color:
-                        priority == 0 ? const Color(0xFFE4602B) : Colors.grey,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Text(
-                    'Urgent',
-                    style: TextStyle(
-                        color: priority == 0 ? Colors.white : Colors.black,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 18),
-                  ),
+              Text(
+                'Priority',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w300,
                 ),
               ),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    priority = 1;
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: 500),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: priority == 1
-                        ? MediaQuery.of(context).size.width / 6
-                        : MediaQuery.of(context).size.width / 9,
-                    vertical: 10,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        priority = 0;
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: Duration(milliseconds: 500),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: priority == 0
+                            ? MediaQuery.of(context).size.width / 6
+                            : MediaQuery.of(context).size.width / 9,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: priority == 0
+                            ? const Color(0xFFE4602B)
+                            : Colors.grey,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        'Urgent',
+                        style: TextStyle(
+                            color: priority == 0
+                                ? Theme.of(context).colorScheme.secondary
+                                : Colors.black,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 18),
+                      ),
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    color:
-                        priority == 1 ? const Color(0xFF9AC1EF) : Colors.grey,
-                    borderRadius: BorderRadius.circular(5),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        priority = 1;
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: Duration(milliseconds: 500),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: priority == 1
+                            ? MediaQuery.of(context).size.width / 6
+                            : MediaQuery.of(context).size.width / 9,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: priority == 1
+                            ? const Color(0xFF9AC1EF)
+                            : Colors.grey,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        'Normal',
+                        style: TextStyle(
+                            color: priority == 0
+                                ? Colors.black
+                                : Theme.of(context).colorScheme.secondary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 18),
+                      ),
+                    ),
                   ),
-                  child: Text(
-                    'Normal',
-                    style: TextStyle(
-                        color: priority == 0 ? Colors.black : Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 18),
-                  ),
-                ),
+                ],
               ),
             ],
           ),
@@ -352,7 +486,7 @@ class _addNewTaskState extends State<addNewTask> {
           Text(
             "Due Date",
             style: TextStyle(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.secondary,
               fontSize: 16,
               fontWeight: FontWeight.w300,
             ),
@@ -366,9 +500,10 @@ class _addNewTaskState extends State<addNewTask> {
               width: double.infinity,
               padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Color(0xFF24263a),
+                color: Theme.of(context).colorScheme.onSecondary,
                 borderRadius: BorderRadius.circular(3),
-                border: Border.all(color: Color(0xFF73FA92)),
+                border: Border.all(
+                    color: Theme.of(context).colorScheme.surface, width: 0.5),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -377,11 +512,13 @@ class _addNewTaskState extends State<addNewTask> {
                     _selectedDate != null
                         ? '${_formatDate(_selectedDate!)}'
                         : 'No Date Selected',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontSize: 16),
                   ),
                   Icon(
                     Icons.event,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
                 ],
               ),
@@ -391,7 +528,7 @@ class _addNewTaskState extends State<addNewTask> {
           Text(
             "Task Amount",
             style: TextStyle(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.secondary,
               fontSize: 16,
               fontWeight: FontWeight.w300,
             ),
@@ -400,9 +537,10 @@ class _addNewTaskState extends State<addNewTask> {
             width: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
             decoration: BoxDecoration(
-              color: Color(0xFF24263a),
+              color: Theme.of(context).colorScheme.onSecondary,
               borderRadius: BorderRadius.circular(3),
-              border: Border.all(color: Color(0xFF73FA92)),
+              border: Border.all(
+                  color: Theme.of(context).colorScheme.surface, width: 0.5),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -421,7 +559,7 @@ class _addNewTaskState extends State<addNewTask> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.secondary,
                     ),
                     textAlign: TextAlign.right,
                     decoration: InputDecoration(
@@ -437,9 +575,12 @@ class _addNewTaskState extends State<addNewTask> {
             width: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 0, vertical: 5),
             decoration: BoxDecoration(
-              color: Color(0xFF24263a),
+              color: Theme.of(context).colorScheme.onSecondary,
               borderRadius: BorderRadius.circular(3),
-              border: Border.all(color: Color(0xFF73FA92)),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.surface,
+                width: 0.5,
+              ),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton2<String>(
@@ -447,17 +588,21 @@ class _addNewTaskState extends State<addNewTask> {
                 hint: Text(
                   'Select Client',
                   style: TextStyle(
-                      fontSize: 17,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w300),
+                    fontSize: 17,
+                    color: Theme.of(context).colorScheme.secondary,
+                    fontWeight: FontWeight.w300,
+                  ),
                 ),
                 items: clients
                     .map((client) => DropdownMenuItem<String>(
                           value: client['clientName'],
                           child: Text(
                             '${client['clientName']} (${client['companyName']})',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .secondary, // Updated text color
                             ),
                           ),
                         ))
@@ -468,17 +613,23 @@ class _addNewTaskState extends State<addNewTask> {
                     selectedValue = value;
                   });
                 },
-                buttonStyleData: const ButtonStyleData(
+                buttonStyleData: ButtonStyleData(
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   height: 40,
                   width: 200,
                 ),
-                dropdownStyleData: const DropdownStyleData(
-                    maxHeight: 200,
-                    decoration:
-                        BoxDecoration(color: Color.fromARGB(255, 49, 51, 78))),
-                menuItemStyleData: const MenuItemStyleData(
+                dropdownStyleData: DropdownStyleData(
+                  maxHeight: 200,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.onSecondary,
+                  ),
+                ),
+                menuItemStyleData: MenuItemStyleData(
                   height: 40,
+                  // textStyle: TextStyle(
+                  //   fontSize: 14,
+                  //   color: Theme.of(context).colorScheme.secondary, // Updated text color
+                  // ),
                 ),
                 dropdownSearchData: DropdownSearchData(
                   searchController: textEditingController,
@@ -495,6 +646,11 @@ class _addNewTaskState extends State<addNewTask> {
                       expands: true,
                       maxLines: null,
                       controller: textEditingController,
+                      style: TextStyle(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .secondary, // Updated text color
+                      ),
                       decoration: InputDecoration(
                         isDense: true,
                         contentPadding: const EdgeInsets.symmetric(
@@ -502,17 +658,26 @@ class _addNewTaskState extends State<addNewTask> {
                           vertical: 8,
                         ),
                         hintText: 'Search Client...',
-                        hintStyle: const TextStyle(fontSize: 14),
+                        hintStyle: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .secondary, // Updated text color
+                        ),
                         filled: true,
-                        fillColor: Color(0xFF24263a),
+                        fillColor: Theme.of(context).colorScheme.primary,
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                              color: const Color(0xFF73FA92), width: 0.5),
+                            color: Theme.of(context).colorScheme.surface,
+                            width: 0.5,
+                          ),
                           borderRadius: BorderRadius.circular(3),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                              color: const Color(0xFF73FA92), width: 1.0),
+                            color: Theme.of(context).colorScheme.surface,
+                            width: 1.0,
+                          ),
                           borderRadius: BorderRadius.circular(3),
                         ),
                       ),
@@ -533,11 +698,12 @@ class _addNewTaskState extends State<addNewTask> {
               ),
             ),
           ),
+
           SizedBox(height: 10),
           Text(
             'Payment',
             style: TextStyle(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.secondary,
               fontSize: 16,
               fontWeight: FontWeight.w300,
             ),
@@ -615,7 +781,7 @@ class _addNewTaskState extends State<addNewTask> {
                 Text(
                   "Advanced Amount",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.secondary,
                     fontSize: 16,
                     fontWeight: FontWeight.w300,
                   ),
@@ -624,7 +790,7 @@ class _addNewTaskState extends State<addNewTask> {
                   width: double.infinity,
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
                   decoration: BoxDecoration(
-                    color: Color(0xFF24263a),
+                    color: Theme.of(context).colorScheme.onSecondary,
                     borderRadius: BorderRadius.circular(3),
                     border: Border.all(color: Color(0xFF73FA92)),
                   ),
@@ -646,7 +812,7 @@ class _addNewTaskState extends State<addNewTask> {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.secondary,
                           ),
                           textAlign: TextAlign.right,
                           decoration: InputDecoration(
@@ -667,7 +833,7 @@ class _addNewTaskState extends State<addNewTask> {
                 Text(
                   "Paid Amount",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.secondary,
                     fontSize: 16,
                     fontWeight: FontWeight.w300,
                   ),
@@ -676,7 +842,7 @@ class _addNewTaskState extends State<addNewTask> {
                   width: double.infinity,
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
                   decoration: BoxDecoration(
-                    color: Color(0xFF24263a),
+                    color: Theme.of(context).colorScheme.onSecondary,
                     borderRadius: BorderRadius.circular(3),
                     border: Border.all(color: Color(0xFF73FA92)),
                   ),
@@ -698,7 +864,7 @@ class _addNewTaskState extends State<addNewTask> {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.secondary,
                           ),
                           textAlign: TextAlign.right,
                           decoration: InputDecoration(
@@ -711,7 +877,7 @@ class _addNewTaskState extends State<addNewTask> {
                 ),
               ],
             ),
-          SizedBox(height: 100),
+          SizedBox(height: 40),
           GestureDetector(
             onTap: () {
               setState(() {
@@ -728,18 +894,20 @@ class _addNewTaskState extends State<addNewTask> {
               width: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
-                color: Color(0xFF24263a),
+                color: Theme.of(context).colorScheme.onSecondary,
                 border: Border.all(color: Colors.red, width: 1),
                 borderRadius: BorderRadius.circular(3),
               ),
               child: Text(
                 'Clear',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white, fontSize: 18),
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.secondary,
+                    fontSize: 18),
               ),
             ),
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 10),
           GestureDetector(
             onTap: () async {
               String title = titleController.text.trim();
@@ -837,6 +1005,9 @@ class _addNewTaskState extends State<addNewTask> {
                 style: TextStyle(color: Color(0xFF14142B), fontSize: 18),
               ),
             ),
+          ),
+          SizedBox(
+            height: MediaQuery.of(context).viewInsets.bottom > 0 ? 100 : 10,
           ),
         ],
       ),

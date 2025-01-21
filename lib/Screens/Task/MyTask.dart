@@ -128,13 +128,20 @@ class _myTaskState extends State<myTask> {
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: TextField(
             controller: _searchController,
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.secondary,
+            ),
             decoration: InputDecoration(
-              hintText: 'Search tasks...',
-              hintStyle: TextStyle(color: Colors.white),
-              prefixIcon: Icon(
-                Icons.search,
-                color: Colors.white,
+              hintText: 'Search Tasks...',
+              hintStyle: TextStyle(
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+              prefixIcon: Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: Icon(
+                  Icons.search,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -144,7 +151,7 @@ class _myTaskState extends State<myTask> {
                   ? IconButton(
                       icon: Icon(
                         Icons.clear,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                       onPressed: () {
                         setState(() {
@@ -155,16 +162,16 @@ class _myTaskState extends State<myTask> {
                     )
                   : null,
               filled: true,
-              fillColor: Color(0xFF24263a),
+              fillColor: Theme.of(context).colorScheme.primary,
               enabledBorder: OutlineInputBorder(
-                borderSide:
-                    BorderSide(color: const Color(0xFF73FA92), width: 1.0),
-                borderRadius: BorderRadius.circular(3),
+                borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.surface, width: 1.0),
+                borderRadius: BorderRadius.circular(16),
               ),
               focusedBorder: OutlineInputBorder(
-                borderSide:
-                    BorderSide(color: const Color(0xFF73FA92), width: 2.0),
-                borderRadius: BorderRadius.circular(3),
+                borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.secondary, width: 2.0),
+                borderRadius: BorderRadius.circular(16),
               ),
             ),
             onChanged: (value) {
@@ -179,10 +186,10 @@ class _myTaskState extends State<myTask> {
               height: 43,
               padding: EdgeInsets.symmetric(horizontal: 10),
               decoration: BoxDecoration(
-                color: Color(0xFF24263a),
+                color: Theme.of(context).colorScheme.onSurface,
                 border: Border(
                   bottom: BorderSide(
-                    color: const Color(0xFF73FA92),
+                    color: Theme.of(context).colorScheme.surface,
                     width: 2.0,
                   ),
                 ),
@@ -192,7 +199,7 @@ class _myTaskState extends State<myTask> {
                   value: selectedSorting,
                   dropdownStyleData: DropdownStyleData(
                     decoration: BoxDecoration(
-                      color: Color(0xFF24263a),
+                      color: Theme.of(context).colorScheme.onSurface,
                       borderRadius: BorderRadius.circular(8), // Rounded corners
                     ),
                   ),
@@ -200,7 +207,7 @@ class _myTaskState extends State<myTask> {
                     height: 43,
                     // padding: EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: Color(0xFF24263a),
+                      color: Theme.of(context).colorScheme.onSurface,
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
@@ -216,17 +223,17 @@ class _myTaskState extends State<myTask> {
                         children: [
                           Icon(
                             Icons.sort, // Sort icon on the left
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.surface,
                           ),
                           SizedBox(width: 8), // Space between icon and text
                           Text(
                             value,
                             style: TextStyle(
                               color: value == selectedSorting
-                                  ? Color(
-                                      0xFF73FA92) // Highlight the selected item
-                                  : Colors
-                                      .white, // Default color for other items
+                                  ? Theme.of(context).colorScheme.surface
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .surface, // Default color for other items
                               fontWeight: value == selectedSorting
                                   ? FontWeight
                                       .bold // Make the selected item bold
@@ -253,12 +260,12 @@ class _myTaskState extends State<myTask> {
                   'Filters',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
                 ),
-                iconStyleData: const IconStyleData(
+                iconStyleData: IconStyleData(
                   icon: Icon(Icons.filter_alt),
-                  iconEnabledColor: Colors.white,
+                  iconEnabledColor: Theme.of(context).colorScheme.secondary,
                 ),
                 items: _buildDropdownItems(),
                 value: null,
@@ -269,15 +276,15 @@ class _myTaskState extends State<myTask> {
                 selectedItemBuilder: (context) {
                   return _buildSelectedItems();
                 },
-                buttonStyleData: const ButtonStyleData(
+                buttonStyleData: ButtonStyleData(
                   padding: EdgeInsets.only(left: 16, right: 8),
                   height: 43,
                   width: 100,
                   decoration: BoxDecoration(
-                    color: Color(0xFF24263a),
+                    color: Theme.of(context).colorScheme.onSurface,
                     border: Border(
                       bottom: BorderSide(
-                        color: Color(0xFF73FA92),
+                        color: Theme.of(context).colorScheme.surface,
                         width: 2.0,
                       ),
                     ),
@@ -291,7 +298,7 @@ class _myTaskState extends State<myTask> {
                   maxHeight: 250,
                   width: 380,
                   decoration: BoxDecoration(
-                    color: Color(0xFF24263a),
+                    color: Theme.of(context).colorScheme.onSurface,
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -300,14 +307,17 @@ class _myTaskState extends State<myTask> {
           ],
         ),
         SizedBox(height: 20),
-        Container(
-          height: MediaQuery.of(context).size.height/1.6,
-          child: ListView.builder(
-            itemCount: filteredTaskList.length,
-            itemBuilder: (context, index) {
-              final task = filteredTaskList[index];
-              return _buildTaskCard(task, context, userId);
-            },
+        SingleChildScrollView(
+          child: Column(
+            children: [
+              ...filteredTaskList.map((task) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _buildTaskCard(task, context, userId),
+                );
+              }).toList(),
+              SizedBox(height: 100), // Add 100px space at the end
+            ],
           ),
         ),
       ],
@@ -318,11 +328,12 @@ class _myTaskState extends State<myTask> {
       Map<String, dynamic> task, BuildContext context, String userId) {
     return GestureDetector(
       onTap: () {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertBox(task: task, userId: userId); // Pass userId here
-          },
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                AlertBox(task: task, userId: userId), // Pass userId here
+          ),
         );
       },
       child: Stack(
@@ -331,17 +342,18 @@ class _myTaskState extends State<myTask> {
             margin: EdgeInsets.symmetric(vertical: 5),
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Color(0xFF24263a),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(5),
-                topRight: Radius.circular(5),
-              ),
+              color: Theme.of(context).colorScheme.onSurface,
+              borderRadius: BorderRadius.all(Radius.circular(16)
+                  // topLeft: Radius.circular(16),
+                  // topRight: Radius.circular(16),
+                  ),
             ),
             child: Container(
               decoration: BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(16)),
                 gradient: LinearGradient(
                   colors: [
-                    Color(0xFF24263a).withOpacity(0.0),
+                    Theme.of(context).colorScheme.onSurface.withOpacity(0.0),
                     Color(0xFF73FA92).withOpacity(0.3),
                   ],
                   begin: Alignment.topCenter,
@@ -364,7 +376,7 @@ class _myTaskState extends State<myTask> {
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                     ),
                     SizedBox(height: 8),
@@ -373,14 +385,14 @@ class _myTaskState extends State<myTask> {
                         Text(
                           'Task due date: ',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.secondary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
                           task['dueDate'],
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.secondary,
                           ),
                         ),
                       ],
@@ -390,21 +402,21 @@ class _myTaskState extends State<myTask> {
                         Text(
                           'Client: ',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.secondary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
                           task['client'],
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.secondary,
                           ),
                         ),
                       ],
                     ),
                     SizedBox(height: 8),
                     Divider(
-                      color: Colors.white54,
+                      color: Theme.of(context).colorScheme.secondary,
                       thickness: 1,
                     ),
                     SizedBox(height: 8),
@@ -416,7 +428,7 @@ class _myTaskState extends State<myTask> {
                             Text(
                               'Task Progress',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.secondary,
                               ),
                             ),
                             SizedBox(width: 8),
@@ -460,10 +472,9 @@ class _myTaskState extends State<myTask> {
                       children: [
                         Text(
                           'Payment\nProgress',
-                          
                           style: TextStyle(
                             height: 1,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.secondary,
                             fontWeight: FontWeight.w300,
                           ),
                         ),
@@ -538,7 +549,7 @@ class _myTaskState extends State<myTask> {
                       ? const Color(0xFF73FA92)
                       : const Color(0xFFE4602B),
                   borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(5),
+                    topRight: Radius.circular(16),
                   ),
                 ),
                 child: Column(
@@ -580,17 +591,18 @@ class _myTaskState extends State<myTask> {
               top: 05,
               right: 00,
               child: Container(
-                padding: EdgeInsets.only(top: 10, bottom: 5, left: 5, right: 5),
+                padding: EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: const Color(0xFFE4602B),
                   borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(5),
+                    topRight: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
                   ),
                 ),
                 child: Column(
                   children: [
                     Text(
-                       _getRemainingTime(task['remainingDays']),
+                      _getRemainingTime(task['remainingDays']),
                       style: TextStyle(
                         height: 0.8,
                         fontSize: 30,
@@ -616,7 +628,7 @@ class _myTaskState extends State<myTask> {
                         height: 0.8,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color:task['remainingDays'] > 0
+                        color: task['remainingDays'] > 0
                             ? Colors.black
                             : Colors.white,
                       ),
@@ -625,7 +637,7 @@ class _myTaskState extends State<myTask> {
                 ),
               ),
             ),
-        SizedBox(height: 50),
+          SizedBox(height: 50),
         ],
       ),
     );
@@ -736,13 +748,14 @@ class _myTaskState extends State<myTask> {
                                 isSelected
                                     ? Icons.check_box
                                     : Icons.check_box_outline_blank,
-                                color: Color(0xFF73FA92),
+                                color: Theme.of(context).colorScheme.surface,
                               ),
                               const SizedBox(width: 16),
                               Text(
                                 status,
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
                                   fontSize: 14,
                                 ),
                               ),
@@ -777,13 +790,14 @@ class _myTaskState extends State<myTask> {
                                 isSelected
                                     ? Icons.check_box
                                     : Icons.check_box_outline_blank,
-                                color: Color(0xFF73FA92),
+                                color: Theme.of(context).colorScheme.surface,
                               ),
                               const SizedBox(width: 16),
                               Text(
                                 status,
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
                                   fontSize: 14,
                                 ),
                               ),

@@ -100,7 +100,7 @@ class _TaskCountState extends State<TaskCount> {
         Container(
           padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
           decoration: BoxDecoration(
-            color: Color(0xFF24263a),
+            color: Theme.of(context).colorScheme.onSecondary,
             borderRadius: BorderRadius.circular(5),
           ),
           child: Row(
@@ -111,7 +111,7 @@ class _TaskCountState extends State<TaskCount> {
                 lowerText: 'Total',
                 upperTextColor: Colors.white,
                 lowerTextColor: Colors.grey,
-                containerColor: Colors.white,
+                containerColor: Theme.of(context).colorScheme.secondary,
               ),
               _buildTaskCountBanner(
                 upperText: '$notStartedTasks',
@@ -179,7 +179,7 @@ class _TaskCountState extends State<TaskCount> {
       width: 70,
       padding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFF14142B),
+        color: Theme.of(context).colorScheme.primary,
         borderRadius: BorderRadius.circular(5),
       ),
       child: Column(

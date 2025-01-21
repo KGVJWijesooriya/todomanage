@@ -88,13 +88,14 @@ class _clientsState extends State<clients> {
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: TextField(
             controller: _searchController,
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: Theme.of(context).colorScheme.secondary),
             decoration: InputDecoration(
               hintText: 'Search clients...',
-              hintStyle: TextStyle(color: Colors.white),
+              hintStyle:
+                  TextStyle(color: Theme.of(context).colorScheme.secondary),
               prefixIcon: Icon(
                 Icons.search,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.secondary,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -104,7 +105,7 @@ class _clientsState extends State<clients> {
                   ? IconButton(
                       icon: Icon(
                         Icons.clear,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                       onPressed: () {
                         setState(() {
@@ -114,16 +115,16 @@ class _clientsState extends State<clients> {
                     )
                   : null,
               filled: true,
-              fillColor: Color(0xFF24263a),
+              fillColor: Theme.of(context).colorScheme.primary,
               enabledBorder: OutlineInputBorder(
-                borderSide:
-                    BorderSide(color: const Color(0xFF73FA92), width: 1.0),
-                borderRadius: BorderRadius.circular(3),
+                borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.surface, width: 1.0),
+                borderRadius: BorderRadius.circular(16),
               ),
               focusedBorder: OutlineInputBorder(
-                borderSide:
-                    BorderSide(color: const Color(0xFF73FA92), width: 2.0),
-                borderRadius: BorderRadius.circular(3),
+                borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.surface, width: 2.0),
+                borderRadius: BorderRadius.circular(16),
               ),
             ),
           ),
@@ -140,7 +141,7 @@ class _clientsState extends State<clients> {
             width: double.infinity,
             decoration: BoxDecoration(
               color: Color(0xFFF6C445),
-              borderRadius: BorderRadius.all(Radius.circular(3)),
+              borderRadius: BorderRadius.all(Radius.circular(8)),
             ),
             child: Text(
               ' + Create Client',
@@ -171,12 +172,12 @@ class _clientsState extends State<clients> {
                         Text(
                           'Something went wrong',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.secondary,
                           ),
                         ),
                         Icon(
                           Icons.cloud_off,
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.secondary,
                           size: 32,
                         ),
                       ],
@@ -191,7 +192,8 @@ class _clientsState extends State<clients> {
 
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return Text('No clients found',
-                    style: TextStyle(color: Colors.white));
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary));
               }
 
               // Filter clients based on search query
@@ -208,7 +210,8 @@ class _clientsState extends State<clients> {
 
               if (filteredClients.isEmpty) {
                 return Text('No clients match your search',
-                    style: TextStyle(color: Colors.white));
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary));
               }
 
               return ListView(
@@ -267,17 +270,24 @@ class _clientsState extends State<clients> {
                               margin: EdgeInsets.symmetric(vertical: 10),
                               width: double.infinity,
                               decoration: BoxDecoration(
-                                color: Color(0xFF24263a),
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(5),
-                                  topRight: Radius.circular(5),
-                                ),
+                                color:
+                                    Theme.of(context).colorScheme.onSurface,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8)
+                                        // topLeft: Radius.circular(5),
+                                        // topRight: Radius.circular(5),
+                                        ),
                               ),
                               child: Container(
                                 decoration: BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(8)),
                                   gradient: LinearGradient(
                                     colors: [
-                                      Color(0xFF24263a).withOpacity(0.0),
+                                      Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withOpacity(0.0),
                                       Color(0xFF73FA92).withOpacity(0.3),
                                     ],
                                     begin: Alignment.topCenter,
@@ -296,25 +306,38 @@ class _clientsState extends State<clients> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        data['clientName'] ?? 'Unknown Client',
-                                        style: TextStyle(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                      SizedBox(
+                                        width: 300,
+                                        child: Text(
+                                          data['clientName'] ??
+                                              'Unknown Client',
+                                          style: TextStyle(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .secondary,
+                                          ),
                                         ),
                                       ),
-                                      Text(
-                                        data['companyName'] ??
-                                            'Unknown Company',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w300,
+                                      Container(
+                                        width: 300,
+                                        child: Text(
+                                          data['companyName'] ??
+                                              'Unknown Company',
+                                          style: TextStyle(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .secondary,
+                                            fontWeight: FontWeight.w300,
+                                          ),
                                         ),
                                       ),
                                       SizedBox(height: 8),
                                       Divider(
-                                        color: Colors.white54,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary,
                                         thickness: 1,
                                       ),
                                       SizedBox(height: 8),
@@ -337,7 +360,9 @@ class _clientsState extends State<clients> {
                                           style: TextStyle(
                                             color: data['isActive'] == true
                                                 ? Colors.black
-                                                : Colors.white,
+                                                : Theme.of(context)
+                                                    .colorScheme
+                                                    .secondary,
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
@@ -364,7 +389,9 @@ class _clientsState extends State<clients> {
                                       'Unpaid Amount',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: Colors.white,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary,
                                         fontWeight: FontWeight.w300,
                                       ),
                                     ),
@@ -372,7 +399,9 @@ class _clientsState extends State<clients> {
                                       '${unPaidAmount.toStringAsFixed(2)}',
                                       style: TextStyle(
                                         fontSize: 22,
-                                        color: Colors.white,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -384,15 +413,14 @@ class _clientsState extends State<clients> {
                               top: 10,
                               right: 0,
                               child: Container(
-                                padding: EdgeInsets.only(
-                                    top: 10, bottom: 5, left: 5, right: 5),
+                                padding: EdgeInsets.all(10),
                                 decoration: BoxDecoration(
                                   color: remaTasks == 0
                                       ? const Color(0xFFA1E448)
                                       : const Color(0xFFE4602B),
                                   borderRadius: BorderRadius.only(
-                                    bottomLeft: Radius.circular(5),
-                                    topRight: Radius.circular(5),
+                                    bottomLeft: Radius.circular(8),
+                                    topRight: Radius.circular(8),
                                   ),
                                 ),
                                 child: Column(
@@ -405,7 +433,9 @@ class _clientsState extends State<clients> {
                                         fontWeight: FontWeight.bold,
                                         color: remaTasks == 0
                                             ? Colors.black
-                                            : Colors.white,
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .secondary,
                                       ),
                                     ),
                                     Text(
@@ -415,7 +445,9 @@ class _clientsState extends State<clients> {
                                         fontWeight: FontWeight.bold,
                                         color: remaTasks == 0
                                             ? Colors.black
-                                            : Colors.white,
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .secondary,
                                       ),
                                     ),
                                     Text(
@@ -426,7 +458,9 @@ class _clientsState extends State<clients> {
                                         fontWeight: FontWeight.bold,
                                         color: remaTasks == 0
                                             ? Colors.black
-                                            : Colors.white,
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .secondary,
                                       ),
                                     ),
                                   ],

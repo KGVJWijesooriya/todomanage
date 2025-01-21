@@ -10,7 +10,7 @@ class Shimer {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 1),
           child: Shimmer.fromColors(
-            baseColor: Color(0xFF24263a).withOpacity(1),
+            baseColor: Theme.of(context).colorScheme.onSecondary.withOpacity(1),
             highlightColor: Color(0xFF73FA92).withOpacity(0.5),
             child: Container(
               height: 150,

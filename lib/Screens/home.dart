@@ -1,5 +1,5 @@
-import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
 
 import '../component/filterDropdown.dart';
 import 'Task/taskTimeline.dart';
@@ -20,12 +20,7 @@ class homePage extends StatefulWidget {
 class _homePageState extends State<homePage> {
   int _bottomNavIndex = 0;
   int NavIndex = 0;
-  final List<IconData> iconList = [
-    Icons.home,
-    Icons.groups,
-    Icons.attach_money,
-    Icons.trending_up,
-  ]; // Icon list for the nav bar
+
   String getAppBarTitle() {
     if (NavIndex == 5) {
       return 'Add New Client';
@@ -53,111 +48,130 @@ class _homePageState extends State<homePage> {
 
   @override
   Widget build(BuildContext context) {
-    print(NavIndex);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0xFF14142B),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF14142B),
-        leadingWidth: 100,
-        leading: Hero(
-          tag: 'logo',
-          child: Center(
-            child: Image.asset(
-              'assets/images/Lucid.png',
-              fit: BoxFit.fill,
-              width: 35,
-            ),
-          ),
-        ),
-        title: Text(
-          getAppBarTitle(),
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 30,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 25),
-            child: IconButton(
-              icon: Icon(
-                Icons.person,
-                color: Colors.white,
-                size: 32,
+    return SafeArea(
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          leadingWidth: 100,
+          leading: Hero(
+            tag: 'logo',
+            child: Center(
+              child: Image.asset(
+                'assets/images/Lucid.png',
+                fit: BoxFit.fill,
+                width: 35,
               ),
-              onPressed: () {
-                setState(() {
-                  NavIndex = 6; // Set a NavIndex value for ProfileView
-                });
-              },
             ),
           ),
-        ],
-      ),
-      floatingActionButton: ClipOval(
-        child: GestureDetector(
-          onTap: () {
+          title: Text(
+            getAppBarTitle(),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.secondary,
+              fontSize: 30,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          centerTitle: true,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 25),
+              child: IconButton(
+                icon: Icon(
+                  Icons.person,
+                  color: Theme.of(context).colorScheme.secondary,
+                  size: 32,
+                ),
+                onPressed: () {
+                  setState(() {
+                    NavIndex = 6; // Set a NavIndex value for ProfileView
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
             setState(() {
               NavIndex = 0;
               _bottomNavIndex = 4;
             });
           },
-          child: Container(
-            color: const Color(0xFFF6C445),
-            width: 56,
-            height: 56,
-            child: Icon(
-              Icons.add,
-              size: 35,
-              color: Color(0xFF14142B),
-            ),
+          backgroundColor: const Color(0xFFF6C445),
+          label: Text(
+            'Add Task',
+            style: TextStyle(color: Color(0xFF14142B)),
           ),
+          icon: Icon(
+            Icons.add,
+            size: 35,
+            color: Color(0xFF14142B),
+          ),
+          // child: Row(
+          //   children: [
+          // Icon(
+          //   Icons.add,
+          //   size: 35,
+          //   color: Color(0xFF14142B),
+          // ),
+          //     Text('Add New Task')
+          //   ],
+          // ),
         ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: AnimatedBottomNavigationBar(
-        height: 80,
-        icons: iconList,
-        iconSize: 30,
-        activeIndex: _bottomNavIndex,
-        gapLocation: GapLocation.center,
-        notchSmoothness: NotchSmoothness.softEdge,
-        backgroundColor: const Color(0xFF24263A),
-        inactiveColor: Colors.grey,
-        activeColor: const Color(0xFF73FA92),
-        onTap: (index) => setState(() {
-          NavIndex = 0;
-          _bottomNavIndex = index;
-        }),
-      ),
-      body: SingleChildScrollView(
-        physics: BouncingScrollPhysics(),
-        child: Padding(
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        body: Container(
           padding: EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: MediaQuery.of(context).size.height / 40),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              NavIndex == 5
-                  ? addNewClients()
-                  : NavIndex == 6 // Check if ProfileView should be shown
-                      ? ProfileView() // Show ProfileView when NavIndex is 6
-                      : Column(
-                          children: [
-                            if (_bottomNavIndex == 0) myTask(),
-                            if (_bottomNavIndex == 1)
-                              clients(
-                                onIconPressed: handleIconPressed,
-                              ),
-                            // if (_bottomNavIndex == 2) TaskTimelineTile(),
-                            if (_bottomNavIndex == 3) Mainanalize(),
-                            if (_bottomNavIndex == 4) addNewTask(),
-                          ],
-                        ),
+            horizontal: 20,
+          ),
+          child: NavIndex == 5
+              ? addNewClients()
+              : NavIndex == 6
+                  ? ProfileView()
+                  : SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          if (_bottomNavIndex == 0) myTask(),
+                          if (_bottomNavIndex == 1)
+                            clients(
+                              onIconPressed: handleIconPressed,
+                            ),
+                          if (_bottomNavIndex == 3) Mainanalize(),
+                          if (_bottomNavIndex == 4) addNewTask(),
+                        ],
+                      ),
+                    ),
+        ),
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.onSurface,
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 10,
+                color: Colors.black.withOpacity(0.1),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: GNav(
+            gap: 8,
+            iconSize: MediaQuery.of(context).size.width/15,
+            activeColor: Theme.of(context).colorScheme.surface,
+          tabBackgroundColor: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+            color: Colors.grey,
+            backgroundColor: Theme.of(context).colorScheme.onSurface,
+            padding: const EdgeInsets.all(16),
+            selectedIndex: _bottomNavIndex,
+            onTabChange: (index) => setState(() {
+              NavIndex = 0;
+              _bottomNavIndex = index;
+            }),
+            tabs: const [
+              GButton(icon: Icons.home, text: 'My Tasks'),
+              GButton(icon: Icons.groups, text: 'Clients'),
+              GButton(icon: Icons.attach_money, text: 'Payment'),
+              GButton(icon: Icons.trending_up, text: 'Analytics'),
             ],
           ),
         ),

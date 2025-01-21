@@ -85,6 +85,7 @@ class _MainanalizeState extends State<Mainanalize> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.onSurface,
           title: const Text('Select Custom Date Range'),
           content: SizedBox(
             height: 400,
@@ -95,18 +96,25 @@ class _MainanalizeState extends State<Mainanalize> {
                 customDateRange?.start ?? selectedDateRange!.start,
                 customDateRange?.end ?? selectedDateRange!.end,
               ),
-              backgroundColor: Color(0xFF24263a),
-              selectionColor: Color(0xFF73FA92),
-              startRangeSelectionColor: Color(0xFF73FA92),
-              endRangeSelectionColor: Color(0xFF73FA92),
-              rangeSelectionColor: Color(0xFF73FA92).withOpacity(0.3),
-              todayHighlightColor: Color(0xFF73FA92),
+              backgroundColor: Theme.of(context).colorScheme.background,
+              selectionColor: Theme.of(context).colorScheme.secondary,
+              startRangeSelectionColor: Theme.of(context).colorScheme.secondary,
+              endRangeSelectionColor: Theme.of(context).colorScheme.secondary,
+              rangeSelectionColor:
+                  Theme.of(context).colorScheme.secondary.withOpacity(0.3),
+              todayHighlightColor: Theme.of(context).colorScheme.primary,
               headerStyle: DateRangePickerHeaderStyle(
-                textStyle: TextStyle(color: Colors.white),
+                textStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onBackground,
+                ),
               ),
               monthCellStyle: DateRangePickerMonthCellStyle(
-                textStyle: TextStyle(color: Colors.white),
-                todayTextStyle: TextStyle(color: Color(0xFF73FA92)),
+                textStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onBackground,
+                ),
+                todayTextStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
               onSelectionChanged: (DateRangePickerSelectionChangedArgs args) {
                 if (args.value is PickerDateRange) {
@@ -125,7 +133,7 @@ class _MainanalizeState extends State<Mainanalize> {
               },
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.secondary,
                 textStyle: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w300,
@@ -144,7 +152,7 @@ class _MainanalizeState extends State<Mainanalize> {
               },
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                foregroundColor: const Color(0xFF73FA92),
+                foregroundColor: Theme.of(context).colorScheme.surface,
                 textStyle: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -169,27 +177,44 @@ class _MainanalizeState extends State<Mainanalize> {
             children: [
               DropdownButtonHideUnderline(
                 child: DropdownButton2<String>(
-                  hint: const Text('Select Week', textAlign: TextAlign.center),
+                  hint: Text(
+                    'Select Week',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .secondary, // Set hint text color
+                    ),
+                  ),
                   value: selectedWeek,
                   items: weekOptions
                       .map((week) => DropdownMenuItem<String>(
                             value: week,
-                            child: Center(child: Text(week)),
+                            child: Center(
+                              child: Text(
+                                week,
+                                style: TextStyle(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .secondary, // Set item text color
+                                ),
+                              ),
+                            ),
                           ))
                       .toList(),
                   dropdownStyleData: DropdownStyleData(
                     decoration: BoxDecoration(
-                      color: Color(0xFF24263a),
+                      color: Theme.of(context).colorScheme.onSurface,
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  buttonStyleData: const ButtonStyleData(
+                  buttonStyleData: ButtonStyleData(
                     height: 43,
                     decoration: BoxDecoration(
-                      color: Color(0xFF24263a),
+                      color: Theme.of(context).colorScheme.onSurface,
                       border: Border(
                         bottom: BorderSide(
-                          color: Color(0xFF73FA92),
+                          color: Theme.of(context).colorScheme.surface,
                           width: 2.0,
                         ),
                       ),
@@ -209,29 +234,46 @@ class _MainanalizeState extends State<Mainanalize> {
               ),
               DropdownButtonHideUnderline(
                 child: DropdownButton2<String>(
-                  hint: const Text('Select Month', textAlign: TextAlign.center),
+                  hint: Text(
+                    'Select Month',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .secondary, // Set hint text color
+                    ),
+                  ),
                   value: selectedMonth,
                   items: monthOptions
                       .map((month) => DropdownMenuItem<String>(
                             value: month,
-                            child: Center(child: Text(month)),
+                            child: Center(
+                              child: Text(
+                                month,
+                                style: TextStyle(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .secondary, // Set item text color
+                                ),
+                              ),
+                            ),
                           ))
                       .toList(),
                   dropdownStyleData: DropdownStyleData(
                     decoration: BoxDecoration(
-                      color: Color(0xFF24263a),
+                      color: Theme.of(context).colorScheme.onSurface,
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  buttonStyleData: const ButtonStyleData(
+                  buttonStyleData: ButtonStyleData(
                     height: 43,
                     width: 150,
                     padding: EdgeInsets.only(left: 10),
                     decoration: BoxDecoration(
-                      color: Color(0xFF24263a),
+                      color: Theme.of(context).colorScheme.onSurface,
                       border: Border(
                         bottom: BorderSide(
-                          color: Color(0xFF73FA92),
+                          color: Theme.of(context).colorScheme.surface,
                           width: 2.0,
                         ),
                       ),
@@ -298,24 +340,24 @@ class _MainanalizeState extends State<Mainanalize> {
             openCustomDateRangePicker(context);
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFF24263a),
+            backgroundColor: Theme.of(context).colorScheme.onSurface,
             minimumSize: const Size(double.infinity, 50),
             padding: const EdgeInsets.symmetric(horizontal: 20),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(3),
-              side: const BorderSide(
-                color: Color(0xFF73FA92),
-                width: 1,
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.surface,
+                width: 0.5,
               ),
             ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Text(
                 'Custom Range',
                 style: TextStyle(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.secondary,
                     fontSize: 16,
                     fontWeight: FontWeight.w300),
               ),
@@ -323,7 +365,7 @@ class _MainanalizeState extends State<Mainanalize> {
               Icon(
                 Icons.date_range,
                 size: 24,
-                color: Color(0xFF73FA92),
+                color: Theme.of(context).colorScheme.surface,
               ),
             ],
           ),
@@ -336,7 +378,9 @@ class _MainanalizeState extends State<Mainanalize> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w300),
             ),
           ),
-        TaskCount(selectedDateRange: selectedDateRange!,)
+        TaskCount(
+          selectedDateRange: selectedDateRange!,
+        )
       ],
     );
   }
